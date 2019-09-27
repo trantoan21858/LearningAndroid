@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="MyTheme" parent="AppTheme">
+        <item name="colorPrimary">@color/defaultColor</item>
+        <item name="colorPrimaryDark">@color/defaultColorDark</item>
+        <item name="android:textColorTertiary">@color/defaultTextColor</item>
+        <item name="android:navigationBarColor">@color/defaultColor</item>
+    </style>
+</resources>
