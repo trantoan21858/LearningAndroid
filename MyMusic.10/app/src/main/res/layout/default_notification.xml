@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="40dp">
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:padding="3dp"
+        android:src="@mipmap/anh"/>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="40dp">
+        <TextView
+            android:gravity="bottom"
+            android:hint="(name_song)"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textSize="14sp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textSize="10sp"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:hint="00:00"/>
+    </LinearLayout>
+
+    <ImageView
+        android:src="@drawable/ic_rew_dark"
+        android:padding="10dp"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"/>
+    <ImageView
+        android:id="@+id/play_button_1_noti"
+        android:padding="5dp"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:layout_height="match_parent"
+        android:layout_width="40dp"
+        android:src="@drawable/ic_pause_orange"/>
+    <ImageView
+        android:src="@drawable/ic_fwd_dark"
+        android:padding="10dp"
+        android:layout_width="40dp"
+        android:layout_height="match_parent"/>
+
+
+</LinearLayout>

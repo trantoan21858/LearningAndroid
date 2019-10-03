@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="size_status_bar_1">65dp</dimen>
+    <dimen name="size_item">60dp</dimen>
+    <dimen name="size_item_land">34dp</dimen>
+    <dimen name="padding_2">16dp</dimen>
+    <dimen name="padding_2_land">8dp</dimen>
+    <dimen name="size_status_bar_2">64dp</dimen>
+    <dimen name="padding">7dp</dimen>
+    <dimen name="size_set_button">22dp</dimen>
+</resources>
