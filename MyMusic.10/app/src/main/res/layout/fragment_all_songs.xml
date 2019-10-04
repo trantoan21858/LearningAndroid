@@ -25,14 +25,13 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools">
         <ImageView
-            android:id="@+id/show_image"
+            android:id="@+id/image_song_playing_1"
             android:layout_width="@dimen/size_status_bar_1"
             android:layout_height="@dimen/size_status_bar_1"
             android:padding="@dimen/padding"
-            android:src="@mipmap/anh"/>
+            android:src="@drawable/defaut_album_image"/>
 
         <LinearLayout
-            android:id="@+id/show_infor_playback_1"
             android:onClick="changeFragment"
             android:layout_width="0dp"
             android:layout_height="match_parent"

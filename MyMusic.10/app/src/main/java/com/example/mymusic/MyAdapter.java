@@ -48,19 +48,21 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Song song = mList.get(position);
-        if (position == mActivityMusic.getmPos()) {
-            holder.index.setText("");
-            holder.index.setBackgroundResource(R.mipmap.ic_launcher);
-            holder.name.setTypeface(Typeface.DEFAULT_BOLD);
-        } else {
-            holder.index.setText(Integer.toString(position + 1));
-            holder.name.setTypeface(Typeface.DEFAULT);
-            holder.index.setBackgroundResource(0);
+        if (mActivityMusic.mBound){
+            if (position == mActivityMusic.mService.getPos()) {
+                holder.index.setText("");
+                holder.index.setBackgroundResource(R.mipmap.ic_launcher);
+                holder.name.setTypeface(Typeface.DEFAULT_BOLD);
+            } else {
+                holder.index.setText(Integer.toString(position + 1));
+                holder.name.setTypeface(Typeface.DEFAULT);
+                holder.index.setBackgroundResource(0);
+            }
+            holder.name.setText(song.title);
+            int munute=(int) song.duration/60000;
+            int second=(int) song.duration/1000 %60;
+            holder.duration.setText(String.format("%02d:%02d",munute,second));
         }
-        holder.name.setText(song.title);
-        int munute=(int) song.duration/60000;
-        int second=(int) song.duration/1000 %60;
-        holder.duration.setText(String.format("%02d:%02d",munute,second));
     }
 
     @Override
@@ -106,10 +108,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void clicked() {
             mSong = mList.get(getAdapterPosition());
-            mActivityMusic.setSongPlay(mSong);
+            mActivityMusic.mService.setSongPlay(mSong);
             mActivityMusic.mService.startNewSong(mSong.data);
-            mActivityMusic.setPlay(true);
-            mActivityMusic.setmPos(getAdapterPosition());
+            mActivityMusic.mService.setPosPlay(getAdapterPosition());
             mSongsFragment.updateUi();
             notifyDataSetChanged();
         }

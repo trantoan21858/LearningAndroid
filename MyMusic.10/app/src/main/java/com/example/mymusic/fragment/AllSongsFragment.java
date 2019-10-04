@@ -1,6 +1,7 @@
 package com.example.mymusic.fragment;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.mymusic.ActivityMusic;
 import com.example.mymusic.MyAdapter;
@@ -48,7 +50,6 @@ public class AllSongsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_all_songs, container, false);
         //intialize fake data
-
         final ActivityMusic activityMusic = (ActivityMusic) getActivity();
         //set Play Button
         mPlayBtn1 = view.findViewById(R.id.play_button_1);
@@ -58,9 +59,11 @@ public class AllSongsFragment extends Fragment {
                 setmPlayBtn(activityMusic);
             }
         });
-        if (activityMusic.getIsPlay()) {
-            mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
-        }
+         if (activityMusic.mBound){
+             if (activityMusic.mService.isPlaying()) {
+                 mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
+             }
+         }
 
         //set recycleView
         mAdapter = new MyAdapter(mListSong, getContext(), (ActivityMusic) getActivity(), this);
@@ -70,11 +73,18 @@ public class AllSongsFragment extends Fragment {
         //info song
         mNamePlay = view.findViewById(R.id.name_song_playing_1);
         mArtist = view.findViewById(R.id.artist_song_playing_1);
-        mImage = view.findViewById(R.id.image_song_playing_2);
-        if (activityMusic.getSongPlay() != null) {
-            Song song = ((ActivityMusic) getActivity()).getSongPlay();
-            mNamePlay.setText(song.title);
-            mArtist.setText(song.artist);
+        mImage = view.findViewById(R.id.image_song_playing_1);
+        if (activityMusic.mBound){
+            if (activityMusic.mService.getSongPlay() != null) {
+                Song song = ((ActivityMusic) getActivity()).mService.getSongPlay();
+                Bitmap albumImage= Song.getAlbumImage(song.data);
+                mNamePlay.setText(song.title);
+                mArtist.setText(song.artist);
+                if(albumImage != null){
+                    mImage.setImageBitmap(albumImage);
+                }
+                else mImage.setImageResource(R.drawable.defaut_album_image);
+            }
         }
         return view;
     }
@@ -84,11 +94,9 @@ public class AllSongsFragment extends Fragment {
     //set play button va trang thai isPlay
     public void setmPlayBtn(ActivityMusic activityMusic) {
         activityMusic.mService.pause();
-        if (!activityMusic.getIsPlay()) {
-            activityMusic.setPlay(true);
+        if (activityMusic.mService.isPlaying()) {
             mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
         } else {
-            activityMusic.setPlay(false);
             mPlayBtn1.setImageResource(R.drawable.ic_media_play_light);
         }
     }
@@ -104,12 +112,17 @@ public class AllSongsFragment extends Fragment {
 
     public void updateUi() {
         final ActivityMusic activityMusic = (ActivityMusic) getActivity();
-        Song song = activityMusic.getSongPlay();
+        Song song = activityMusic.mService.getSongPlay();
         int orientation = getResources().getConfiguration().orientation;
         if (orientation == getResources().getConfiguration().ORIENTATION_PORTRAIT) {
+            Bitmap albumImage= Song.getAlbumImage(song.data);
             mNamePlay.setText(song.title);
             mArtist.setText(song.artist);
             mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
+            if(albumImage != null){
+                mImage.setImageBitmap(albumImage);
+            }
+            else mImage.setImageResource(R.drawable.defaut_album_image);
         } else {
             mPlaybackFragment.updateUi();
         }

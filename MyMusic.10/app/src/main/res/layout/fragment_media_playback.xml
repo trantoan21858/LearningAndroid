@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:layout_gravity="center"
-        android:src="@mipmap/anh" />
+        android:src="@drawable/defaut_album_image" />
 
     <LinearLayout
         android:alpha="0.7"
@@ -27,7 +27,7 @@
             android:layout_width="@dimen/size_status_bar_2"
             android:layout_height="match_parent"
             android:padding="@dimen/padding"
-            android:src="@mipmap/anh" />
+            android:src="@drawable/defaut_album_image" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -102,7 +102,6 @@
         android:translationZ="20dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:progress="50"
         android:layout_gravity="bottom"
         android:layout_marginBottom="66dp"
         android:progressTint="@color/defaultColor"

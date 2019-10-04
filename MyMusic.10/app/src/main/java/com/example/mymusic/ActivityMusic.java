@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.mymusic.fragment.AllSongsFragment;
@@ -33,10 +31,7 @@ import java.util.ArrayList;
 public class ActivityMusic extends AppCompatActivity {
     public static final String CHANNEL_ID="musicChannel";
     public MyService mService;
-    private Song songPlay;
-    private boolean isPlay=false;
-    private int mPos = -1;
-    private boolean mBound;
+    public boolean mBound;
     private ArrayList<Song> mList= new ArrayList<>();
 
     @Override
@@ -51,42 +46,12 @@ public class ActivityMusic extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             creatNotificationchannel();
         }
-        /*if (savedInstanceState != null) {
-            String time = savedInstanceState.getString("time");
-            String name = savedInstanceState.getString("name");
-            String artist = savedInstanceState.getString("artist");
-            int id=savedInstanceState.getInt("id");
-            songPlay = new Song(name,artist, 1,"");
-            isPlay = savedInstanceState.getBoolean("isPlay");
-            mPos = savedInstanceState.getInt("position");
-        }*/
-        if (mBound){
-            isPlay=mService.isPlaying();
-        }
-        int orientation = getResources().getConfiguration().orientation;
-        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.activity_music, AllSongsFragment.newInstance()).commit();
-        } else {
-            AllSongsFragment songsFragment = AllSongsFragment.newInstance();
-            MediaPlaybackFragment playbackFragment = MediaPlaybackFragment.newInstance();
-            songsFragment.setmPlaybackFragment(playbackFragment);
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fram_1, songsFragment)
-                    .replace(R.id.fram_2, playbackFragment)
-                    .commit();
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Toast.makeText(this,"Destroy",Toast.LENGTH_SHORT);
         unbindService(connection);
     }
 
@@ -100,18 +65,6 @@ public class ActivityMusic extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putBoolean("isPlay", isPlay);
-        outState.putInt("position", mPos);
-        if (songPlay != null) {
-            outState.putString("name", songPlay.title);
-            outState.putString("time", songPlay.title);
-            outState.putString("artist", songPlay.artist);
-        }
     }
 
     public void changeFragment(View view) {
@@ -134,45 +87,31 @@ public class ActivityMusic extends AppCompatActivity {
             MyService.MyBinder binder = (MyService.MyBinder) iBinder;
             mService = binder.getService();
             mBound = true;
-            Toast.makeText(getApplicationContext(),"connection",Toast.LENGTH_SHORT).show();
+
+            int orientation = getResources().getConfiguration().orientation;
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.activity_music, AllSongsFragment.newInstance()).commit();
+            } else {
+                AllSongsFragment songsFragment = AllSongsFragment.newInstance();
+                MediaPlaybackFragment playbackFragment = MediaPlaybackFragment.newInstance();
+                songsFragment.setmPlaybackFragment(playbackFragment);
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.fram_1, songsFragment)
+                        .replace(R.id.fram_2, playbackFragment)
+                        .commit();
+            }
+            mService.setListPlay(mList);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             mBound=false;
-            Toast.makeText(getApplicationContext(),"disconnect",Toast.LENGTH_SHORT).show();
         }
     };
 
     public interface IshowActionBar {
         void showActionBar(ActivityMusic activityMusic);
-    }
-
-    //getter setter song playing
-    public void setSongPlay(Song songPlay) {
-        this.songPlay = songPlay;
-    }
-
-    public Song getSongPlay() {
-        return songPlay;
-    }
-
-    //is play
-    public void setPlay(boolean play) {
-        isPlay = play;
-    }
-
-    public boolean getIsPlay() {
-        return isPlay;
-    }
-
-    public void setmPos(int mPos) {
-        this.mPos = mPos;
-    }
-
-    //position in list
-    public int getmPos() {
-        return mPos;
     }
 
     public ArrayList<Song> getmList() {

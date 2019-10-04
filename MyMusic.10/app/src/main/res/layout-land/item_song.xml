@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="@dimen/size_item_land">
+    android:layout_height="@dimen/size_item">
 
     <TextView
-        android:id="@+id/index_song"
-        android:layout_width="40dp"
-        android:layout_height="@dimen/size_item_land"
+        android:id="@+id/index_item"
+        android:layout_width="80dp"
+        android:layout_height="@dimen/size_item"
         android:gravity="center"
         android:text="0"
-        android:textSize="6sp"
         android:textAppearance="@style/TextAppearance.AppCompat" />
     <LinearLayout
         android:orientation="vertical"
@@ -17,30 +16,31 @@
         android:layout_weight="1"
         android:layout_height="match_parent">
         <TextView
+            android:id="@+id/name_item"
+            android:gravity="bottom"
             android:hint="(name_song)"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:textSize="8sp"
-            android:gravity="bottom"
-            android:id="@+id/show_name_in_list"/>
+            android:textSize="16sp"/>
         <TextView
+            android:id="@+id/duration_item"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:textSize="6sp"
+            android:textSize="12sp"
             android:textAppearance="@style/TextAppearance.AppCompat"
-            android:id="@+id/show_time_in_list"
             android:hint="00:00"/>
     </LinearLayout>
 
     <ImageView
+        android:scaleType="fitCenter"
         android:id="@+id/menu_popup"
-        android:layout_width="22dp"
+        android:layout_width="45dp"
         android:layout_gravity="center"
-        android:layout_height="22dp"
-        android:padding="4dp"
+        android:layout_height="match_parent"
+        android:padding="@dimen/padding"
         android:src="@drawable/ic_menu_moreoverflow_card_dark_normal" />
 
 </LinearLayout>

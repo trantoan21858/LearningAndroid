@@ -27,7 +27,9 @@ import static com.example.mymusic.ActivityMusic.CHANNEL_ID;
 public class MyService extends Service {
     private  final IBinder binder= new MyBinder();
     private ArrayList<Song> mListPlay;
-    MediaPlayer mPlayer;
+    private int mPosPlay=-1;
+    private Song mSongPlay;
+    private MediaPlayer mPlayer;
     private boolean mIsShuffle;
     private int mRepeat=0;
 
@@ -42,10 +44,6 @@ public class MyService extends Service {
     public void onDestroy() {
         mPlayer.release();
     }
-
-    /*public void setList(ArrayList<Song> songs){
-        mListPlay=songs;
-    }*/
 
     public class MyBinder extends Binder {
         MyService getService() {
@@ -92,6 +90,10 @@ public class MyService extends Service {
     }
 
     public void pause(){
+        if(mPlayer == null) Toast.
+                makeText(getBaseContext(),"Ban chua chon bai hat !",Toast.LENGTH_SHORT).
+                show();
+
         if(mPlayer!=null){
             if(mPlayer.isPlaying()){
                 mPlayer.pause();
@@ -107,4 +109,36 @@ public class MyService extends Service {
         }
         else return false;
     }
+
+    public  void seek(int percent){
+        if(mPlayer != null) {
+            mPlayer.seekTo(mPlayer.getDuration()*percent/100);
+        }
+    }
+
+    public void  setPosPlay(int pos){
+        mPosPlay = pos;
+    }
+
+    public int getPos() {
+        return mPosPlay;
+    }
+
+    public Song getSongPlay() {
+        return mSongPlay;
+    }
+
+    public void setSongPlay(Song mSongPlay) {
+        this.mSongPlay = mSongPlay;
+    }
+
+    public void  setListPlay(ArrayList<Song> list){
+        mListPlay = list;
+    }
+
+    public long getTime(){
+        if (mPlayer == null) return 0;
+         else return mPlayer.getCurrentPosition();
+    }
+
 }
