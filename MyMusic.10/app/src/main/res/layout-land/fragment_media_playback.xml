@@ -176,6 +176,7 @@
                 android:layout_width="0dp"
                 android:src="@drawable/ic_pause_orange"/>
             <ImageView
+                android:id="@+id/next_button"
                 android:src="@drawable/ic_fwd_dark"
                 android:padding="@dimen/padding_2"
                 android:layout_width="0dp"

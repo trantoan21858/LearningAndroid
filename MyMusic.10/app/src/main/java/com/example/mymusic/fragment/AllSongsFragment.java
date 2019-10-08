@@ -1,6 +1,9 @@
 package com.example.mymusic.fragment;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
@@ -33,7 +36,7 @@ public class AllSongsFragment extends Fragment {
 
     private ArrayList<Song> mListSong;
     private RecyclerView recyclerView;
-    private MyAdapter mAdapter;
+    public MyAdapter mAdapter;
     private ImageView mPlayBtn1, mImage;
     private TextView mNamePlay, mArtist;
     private MediaPlaybackFragment mPlaybackFragment;
@@ -43,6 +46,9 @@ public class AllSongsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         ActivityMusic activity= (ActivityMusic) getActivity();
         mListSong=activity.getmList();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MyService.UP_DATE_UI);
+        activity.registerReceiver(receiver,intentFilter);
     }
 
     @Nullable
@@ -127,6 +133,14 @@ public class AllSongsFragment extends Fragment {
             mPlaybackFragment.updateUi();
         }
     }
+
+    BroadcastReceiver receiver =new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mAdapter.notifyDataSetChanged();
+            updateUi();
+        }
+    };
 }
 
 

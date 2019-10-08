@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -96,6 +97,7 @@ public class ActivityMusic extends AppCompatActivity {
                 AllSongsFragment songsFragment = AllSongsFragment.newInstance();
                 MediaPlaybackFragment playbackFragment = MediaPlaybackFragment.newInstance();
                 songsFragment.setmPlaybackFragment(playbackFragment);
+                playbackFragment.setAllSongFragment(songsFragment);
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.fram_1, songsFragment)
                         .replace(R.id.fram_2, playbackFragment)
@@ -158,6 +160,5 @@ public class ActivityMusic extends AppCompatActivity {
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(channel);
     }
-
 }
 
