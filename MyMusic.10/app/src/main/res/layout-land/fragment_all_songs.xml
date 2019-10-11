@@ -29,8 +29,7 @@
             android:id="@+id/image_song_playing_1"
             android:layout_width="@dimen/size_status_bar_1"
             android:layout_height="@dimen/size_status_bar_1"
-            android:padding="@dimen/padding"
-            android:src="@mipmap/anh"/>
+            android:padding="@dimen/padding" />
 
         <LinearLayout
             android:onClick="changeFragment"

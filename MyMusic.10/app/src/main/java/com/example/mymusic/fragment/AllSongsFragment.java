@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,6 +62,7 @@ public class AllSongsFragment extends Fragment {
         //set Play Button
         mPlayBtn1 = view.findViewById(R.id.play_button_1);
         mPlayBtn1.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View view) {
                 setmPlayBtn(activityMusic);
@@ -90,6 +93,7 @@ public class AllSongsFragment extends Fragment {
                     mImage.setImageBitmap(albumImage);
                 }
                 else mImage.setImageResource(R.drawable.defaut_album_image);
+                recyclerView.smoothScrollToPosition(activityMusic.mService.getPos());
             }
         }
         return view;
@@ -98,6 +102,7 @@ public class AllSongsFragment extends Fragment {
     //luu trang thai
 
     //set play button va trang thai isPlay
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void setmPlayBtn(ActivityMusic activityMusic) {
         activityMusic.mService.pause();
         if (activityMusic.mService.isPlaying()) {

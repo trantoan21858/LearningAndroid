@@ -3,7 +3,6 @@ package com.example.mymusic;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
-import android.widget.LinearLayout;
 
 //Class Song
 public class Song {
@@ -11,12 +10,14 @@ public class Song {
     public String artist;
     public long duration;
     public String data;
+    public int id;
 
-    public Song(String title, String artist, long duration, String data) {
+    public Song(String title, String artist, long duration, String data,int id) {
         this.title=title;
         this.artist=artist;
         this.duration=duration;
         this.data=data;
+        this.id =id;
     }
 
     public static Bitmap getAlbumImage(String data)

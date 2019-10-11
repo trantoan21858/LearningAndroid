@@ -12,6 +12,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/MyTheme">
+        <receiver android:name=".MyService$MyReceiver">
+            <intent-filter>
+                <action android:name="Notififcation_Click"/>
+            </intent-filter>
+        </receiver>
         <service android:name=".MyService"/>
         <activity android:name=".ActivityMusic"
             android:launchMode="singleTop">

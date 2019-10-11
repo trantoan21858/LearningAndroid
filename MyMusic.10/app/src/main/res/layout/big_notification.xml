@@ -4,57 +4,64 @@
     android:layout_height="160dp">
 
     <ImageView
+        android:id="@+id/image_song_notification_big"
         android:padding="@dimen/padding"
         android:layout_width="160dp"
-        android:layout_height="match_parent"
-        android:src="@mipmap/anh"/>
+        android:layout_height="match_parent" />
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1">
         <TextView
-            android:text="123123"
+            android:textStyle="bold"
+            android:id="@+id/name_song_notification_big"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>
         <TextView
-            android:text="123123"
+            android:id="@+id/artist_song_notification_big"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>
         <TextView
-            android:text="123123"
+            android:text="Music"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
         <LinearLayout
-            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="60dp">
+            android:layout_height="54dp"
+            android:orientation="horizontal">
+
             <ImageView
-                android:src="@drawable/ic_rew_dark"
-                android:padding="@dimen/padding_2"
-                android:layout_weight="1"
+                android:id="@+id/previous_button_notification_big"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:padding="@dimen/padding"
+                android:src="@drawable/ic_rew_dark" />
+
             <ImageView
+                android:id="@+id/play_button_notification_big"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
                 android:layout_weight="1"
                 android:scaleType="fitCenter"
-                android:layout_gravity="center"
-                android:layout_height="match_parent"
-                android:layout_width="0dp"
-                android:src="@drawable/ic_pause_orange"/>
+                android:src="@drawable/ic_pause_orange" />
+
             <ImageView
-                android:src="@drawable/ic_fwd_dark"
-                android:padding="@dimen/padding_2"
+                android:id="@+id/next_button_notification_big"
                 android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:layout_height="match_parent"/>
+                android:padding="@dimen/padding"
+                android:src="@drawable/ic_fwd_dark" />
         </LinearLayout>
     </LinearLayout>
 
