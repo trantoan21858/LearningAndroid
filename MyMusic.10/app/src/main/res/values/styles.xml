@@ -10,4 +10,13 @@
         <item name="colorPrimaryDark">@color/defaultColor</item>
         <item name="android:textColorTertiary">@color/defaultTextColor</item>
     </style>
+
+    <style name="MyTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="MyTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="MyTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

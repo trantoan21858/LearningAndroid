@@ -146,7 +146,12 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
             mArtistPlay.setText(song.artist);
             mSeekBar.setMax((int) TimeUnit.MILLISECONDS.toSeconds(song.duration));
             mNamePlay.setText(song.title);
-            mPlayBtn.setImageResource(R.drawable.ic_play_orange);
+            if(activityMusic.mService.isPlaying()){
+                mPlayBtn.setImageResource(R.drawable.ic_play_orange);
+            }
+            else {
+                mPlayBtn.setImageResource(R.drawable.ic_pause_orange);
+            }
             Bitmap albumImage= Song.getAlbumImage(song.data);
             if(albumImage != null){
                 mImage.setImageBitmap(albumImage);
@@ -277,10 +282,7 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     BroadcastReceiver receiver =new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int orientation = getResources().getConfiguration().orientation;
-            if (orientation == Configuration.ORIENTATION_PORTRAIT){
-                updateUi();
-            }
+           updateUi();
         }
     };
 }

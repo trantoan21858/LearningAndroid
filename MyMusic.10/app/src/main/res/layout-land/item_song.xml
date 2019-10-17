@@ -16,6 +16,7 @@
         android:layout_weight="1"
         android:layout_height="match_parent">
         <TextView
+            android:singleLine="true"
             android:id="@+id/name_item"
             android:gravity="bottom"
             android:hint="(name_song)"

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_allsong"
+            android:icon="@drawable/ic_all"
+            android:title="All songs" />
+        <item
+            android:id="@+id/nav_favorite"
+            android:icon="@drawable/ic_favorite"
+            android:title="Favorite songs" />
+        <item
+            android:id="@+id/nav_lib"
+            android:icon="@drawable/ic_lib"
+            android:title="Music library" />
+    </group>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/nav_setting"
+                android:title="Settings" />
+            <item
+                android:id="@+id/nav_help"
+                android:title="Help &amp; feedback" />
+        </menu>
+    </item>
+
+</menu>

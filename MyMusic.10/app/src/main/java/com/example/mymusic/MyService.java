@@ -14,13 +14,11 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +37,7 @@ public class MyService extends Service {
     private Song mSongPlay;
     private MediaPlayer mPlayer;
     private boolean mIsShuffle;
+    private boolean isStarted;
     private int mRepeatMode = 0;
     RemoteViews defaultNotification;
     RemoteViews bigNotification;
@@ -283,6 +282,13 @@ public class MyService extends Service {
         return mIsShuffle;
     }
 
+    public boolean isStarted() {
+        return isStarted;
+    }
+    public void setStarted(boolean started){
+        isStarted=started;
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void setOnCompletePlay(){
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -374,11 +380,13 @@ public class MyService extends Service {
         intent.setAction(UP_DATE_UI);
         sendBroadcast(intent);
     }
+    @RequiresApi(api = Build.VERSION_CODES.O)
     void prepareLastSong(){
         mPlayer = new MediaPlayer();
         try {
             mPlayer.setDataSource(mSongPlay.data);
             mPlayer.prepare();
+            setOnCompletePlay();
         } catch (IOException e) {
             Toast.makeText(getBaseContext(), "Exception", Toast.LENGTH_SHORT);
         }

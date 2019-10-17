@@ -2,7 +2,9 @@ package com.example.mymusic;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.app.NotificationChannel;
@@ -19,7 +21,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +28,7 @@ import android.view.View;
 
 import com.example.mymusic.fragment.AllSongsFragment;
 import com.example.mymusic.fragment.MediaPlaybackFragment;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
 
@@ -42,13 +44,21 @@ public class ActivityMusic extends AppCompatActivity {
     SharedPreferences mPreference;
     private int idLast=0;
     private int newPos=-1;
-
+    private DrawerLayout mDrawer;
+    private ActionBarDrawerToggle drawerToggle;
+    private NavigationView navigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mDrawer = findViewById(R.id.drawer_layout);
         mPreference = getSharedPreferences(MUSIC_APP_PREFERENCE,MODE_PRIVATE);
         idLast = mPreference.getInt(ID_SONG,0);
+        drawerToggle = new ActionBarDrawerToggle(this, mDrawer, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        mDrawer.addDrawerListener(drawerToggle);
+        navigationView=findViewById(R.id.nav_view);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
         creatList();
         Intent intent = new Intent(this,MyService.class);
         startService(intent);
@@ -56,8 +66,21 @@ public class ActivityMusic extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             creatNotificationchannel();
         }
+
     }
 
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
     @Override
     protected void onDestroy() {
         unbindService(connection);
@@ -68,7 +91,7 @@ public class ActivityMusic extends AppCompatActivity {
         SharedPreferences.Editor editor = mPreference.edit();
         editor.putInt(REPEAT_MODE,mService.getRepeatMode());
         editor.putBoolean(IS_SHUFFLE,mService.isShuffle());
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -86,6 +109,9 @@ public class ActivityMusic extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if(drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -94,6 +120,7 @@ public class ActivityMusic extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.activity_music, MediaPlaybackFragment.newInstance())
                 .addToBackStack(null).commit();
+        navigationView.setVisibility(View.INVISIBLE);
     }
 
     public void backToList(View view) {
@@ -125,13 +152,16 @@ public class ActivityMusic extends AppCompatActivity {
                         .replace(R.id.fram_2, playbackFragment)
                         .commit();
             }
-            mService.setListPlay(mList);
-            mService.setRepeatMode(mPreference.getInt(REPEAT_MODE,0));
-            mService.setShuffle(mPreference.getBoolean(IS_SHUFFLE,false));
-            if(newPos!= -1){
-                mService.setSongPlay(mList.get(newPos));
-                mService.setPosPlay(newPos);
-                mService.prepareLastSong();
+            if(!mService.isStarted()){
+                mService.setListPlay(mList);
+                mService.setRepeatMode(mPreference.getInt(REPEAT_MODE,0));
+                mService.setShuffle(mPreference.getBoolean(IS_SHUFFLE,false));
+                if(newPos!= -1){
+                    mService.setPosPlay(newPos);
+                    mService.setSongPlay(mList.get(newPos));
+                    mService.prepareLastSong();
+                }
+                mService.setStarted(true);
             }
         }
 

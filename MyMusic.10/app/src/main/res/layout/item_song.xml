@@ -18,6 +18,7 @@
         <TextView
             android:id="@+id/name_item"
             android:gravity="bottom"
+            android:singleLine="true"
             android:hint="(name_song)"
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_width="match_parent"

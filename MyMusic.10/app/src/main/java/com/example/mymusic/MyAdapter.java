@@ -4,17 +4,21 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Build;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.mymusic.FavoriteDatabase.FavoriteSongsProvider;
 import com.example.mymusic.fragment.AllSongsFragment;
 import com.example.mymusic.fragment.MediaPlaybackFragment;
 
@@ -27,6 +31,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     private Context mContext;
     private ActivityMusic mActivityMusic;
     private AllSongsFragment mSongsFragment;
+    private FavoriteSongsProvider provider;
 
     public MyAdapter(ArrayList<Song> mList, Context context, ActivityMusic activityMusic, AllSongsFragment fragments) {
         this.mActivityMusic = activityMusic;
@@ -35,6 +40,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         this.mSongsFragment = fragments;
         this.mActivityMusic = activityMusic;
         mlayoutInflater = LayoutInflater.from(context);
+        provider = new FavoriteSongsProvider();
     }
 
 
@@ -103,6 +109,28 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 }
             });
             imageView = itemView.findViewById(R.id.menu_popup);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    PopupMenu popupMenu = new PopupMenu(mContext,v);
+                    popupMenu.getMenu().add(0,1,0,"Add to Favorite");
+                    popupMenu.getMenu().add(0,2,0,"Remove Favorite");
+                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            if(item.getItemId()==1){
+                                provider.insert(
+                                        Uri.parse(FavoriteSongsProvider.URI_FAVORITE+"/2"),
+                                        null
+                                );
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
+                    popupMenu.show();
+                }
+            });
         }
 
         @RequiresApi(api = Build.VERSION_CODES.O)
