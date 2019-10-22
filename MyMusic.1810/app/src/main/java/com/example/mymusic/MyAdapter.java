@@ -63,11 +63,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Song song = mList.get(position);
-        if (mActivityMusic.mBound) {
-            if (song.id == mActivityMusic.mService.getSongPlay().id) {
+        if (mActivityMusic.isBound()) {
+            if (song.id == mActivityMusic.getService().getIdPlay()) {
                 holder.index.setVisibility(View.INVISIBLE);
                 holder.equalizerView.setVisibility(View.VISIBLE);
-                if (mActivityMusic.mService.isPlaying()) {
+                if (mActivityMusic.getService().isPlaying()) {
                     holder.equalizerView.animateBars();
                 } else {
                     if (!holder.equalizerView.isAnimating()) {
@@ -145,9 +145,10 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void clicked() {
             mSong = mList.get(getLayoutPosition());
-            mActivityMusic.mService.setSongPlay(mSong);
-            mActivityMusic.mService.startNewSong(mSong.data);
-            mActivityMusic.mService.setPosPlay(getLayoutPosition());
+            mActivityMusic.getService().setSongPlay(mSong);
+            mActivityMusic.getService().startNewSong(mSong.data);
+            mActivityMusic.getService().setPosPlay(getLayoutPosition());
+            mActivityMusic.getService().setIdSongPlay(mSong.id);
             mSongsFragment.updateUi();
             int pos = getLayoutPosition();
             new DataAsyncTask(TASK_COUNT,mListAll.get(pos).id,pos).execute();
@@ -157,7 +158,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
 
     public PopupMenu getMenu(View v, final int pos) {
         PopupMenu popupMenu = new PopupMenu(mContext, v);
-        if(!mActivityMusic.isShowFavorite){
+        if(!mActivityMusic.getShowFavorite()){
             popupMenu.getMenu().add(0, 1, 0, "Yêu thích!");
         }
         popupMenu.getMenu().add(0, 2, 0, "Bỏ thích.");
@@ -266,7 +267,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
                     null
 
             );
-            if(mActivityMusic.isShowFavorite){
+            if(mActivityMusic.getShowFavorite()){
                 mList.remove(pos);
                 notifyDataSetChanged();
             }

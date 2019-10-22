@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class BaseSongListFragment extends Fragment {
     private ArrayList<Song> mListSong;
     private RecyclerView recyclerView;
-    public MyAdapter mAdapter;
+    private MyAdapter mAdapter;
     private ImageView mPlayBtn1, mImage;
     private TextView mNamePlay, mArtist;
 
@@ -75,19 +75,19 @@ public class BaseSongListFragment extends Fragment {
         mNamePlay = view.findViewById(R.id.name_song_playing_1);
         mArtist = view.findViewById(R.id.artist_song_playing_1);
         mImage = view.findViewById(R.id.image_song_playing_1);
-        if (activityMusic.mBound){
-            if (activityMusic.mService.getSongPlay() != null) {
-                Song song = ((ActivityMusic) getActivity()).mService.getSongPlay();
-                Bitmap albumImage= activityMusic.mService.getAlbumBitmap();
+        if (activityMusic.isBound()){
+            if (activityMusic.getService().getSongPlay() != null) {
+                Song song = ((ActivityMusic) getActivity()).getService().getSongPlay();
+                Bitmap albumImage= activityMusic.getService().getAlbumBitmap();
                 mNamePlay.setText(song.title);
                 mArtist.setText(song.artist);
                 if(albumImage != null){
                     mImage.setImageBitmap(albumImage);
                 }
                 else mImage.setImageResource(R.drawable.defaut_album_image);
-                recyclerView.smoothScrollToPosition(activityMusic.mService.getPos());
+                recyclerView.smoothScrollToPosition(activityMusic.getService().getPos());
             }
-            if (activityMusic.mService.isPlaying()) {
+            if (activityMusic.getService().isPlaying()) {
                 mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
             }
         }
@@ -99,8 +99,8 @@ public class BaseSongListFragment extends Fragment {
     //set play button va trang thai isPlay
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void setmPlayBtn(ActivityMusic activityMusic) {
-        activityMusic.mService.pause();
-        if (activityMusic.mService.isPlaying()) {
+        activityMusic.getService().pause();
+        if (activityMusic.getService().isPlaying()) {
             mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
         } else {
             mPlayBtn1.setImageResource(R.drawable.ic_media_play_light);
@@ -115,18 +115,27 @@ public class BaseSongListFragment extends Fragment {
 
     public void updateUi() {
         ActivityMusic activityMusic = (ActivityMusic) getActivity();
-        if (activityMusic != null && activityMusic.mBound){
-            Song song = activityMusic.mService.getSongPlay();
-            Bitmap albumImage= activityMusic.mService.getAlbumBitmap();
+        if (activityMusic != null && activityMusic.isBound()){
+            Song song = activityMusic.getService().getSongPlay();
+            Bitmap albumImage= activityMusic.getService().getAlbumBitmap();
             mNamePlay.setText(song.title);
             mArtist.setText(song.artist);
-            mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
+            if(activityMusic.getService().isPlaying()) {
+                mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
+            } else {
+                mPlayBtn1.setImageResource(R.drawable.ic_media_play_light);
+            }
             if(albumImage != null){
                 mImage.setImageBitmap(albumImage);
             }
             else mImage.setImageResource(R.drawable.defaut_album_image);
             mAdapter.notifyDataSetChanged();
         }
+
+    }
+
+    public MyAdapter getAdapter(){
+        return mAdapter;
     }
 
 

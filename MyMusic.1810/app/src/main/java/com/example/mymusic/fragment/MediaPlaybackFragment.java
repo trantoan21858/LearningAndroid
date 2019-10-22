@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -31,11 +30,12 @@ import com.example.mymusic.Song;
 import java.util.concurrent.TimeUnit;
 
 public class MediaPlaybackFragment extends Fragment implements ActivityMusic.IshowActionBar, View.OnClickListener {
-    private TextView mNamePlay, mArtistPlay, mDuration,mTimePlay;
-    private ImageView mPlayBtn, mImage, mBigImage,mShuffleBtn, mRepeatBtn, mNextBtn, mPreviuousBtn;
-    private ActivityMusic activityMusic;
+    private TextView mNamePlay, mArtistPlay, mDuration, mTimePlay;
+    private ImageView mPlayBtn, mImage, mBigImage, mShuffleBtn, mRepeatBtn, mNextBtn, mPreviuousBtn;
+    private ActivityMusic mActivity;
     private SeekBar mSeekBar;
-    SeekBarAsyncTask asyncTask;
+    private SeekBarAsyncTask mAsyncTask;
+
     public static MediaPlaybackFragment newInstance() {
         return new MediaPlaybackFragment();
     }
@@ -43,10 +43,10 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activityMusic = (ActivityMusic) getActivity();
+        mActivity = (ActivityMusic) getActivity();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MyService.UP_DATE_UI);
-        activityMusic.registerReceiver(receiver,intentFilter);
+        mActivity.registerReceiver(receiver, intentFilter);
     }
 
     @Nullable
@@ -56,42 +56,43 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
         //set PlayButton;
         findView(view);
         setOnClick();
-        if(activityMusic.mBound){
-            Song song = activityMusic.mService.getSongPlay();
-            if (activityMusic.mService.getSongPlay() != null) {
-                int munute=(int) song.duration/60000;
-                int second=(int) song.duration/1000 %60;
-                mDuration.setText(String.format("%02d:%02d",munute,second));
+        if (mActivity.isBound()) {
+            Song song = mActivity.getService().getSongPlay();
+            if (mActivity.getService().getSongPlay() != null) {
+                int minute = (int) song.duration / 60000;
+                int second = (int) song.duration / 1000 % 60;
+                mDuration.setText(String.format("%02d:%02d", minute, second));
                 mArtistPlay.setText(song.artist);
                 mNamePlay.setText(song.title);
-                int time=activityMusic.mService.getTime();
+                int time = mActivity.getService().getTime();
                 mSeekBar.setMax((int) TimeUnit.MILLISECONDS.toSeconds(song.duration));
                 mSeekBar.setProgress(time);
-                int munutePlay=time/60;
-                int secondPlay=time %60;
-                mTimePlay.setText(String.format("%02d:%02d",munutePlay,secondPlay));
-                if(activityMusic.mService.getAlbumBitmap() != null){
-                    mImage.setImageBitmap(activityMusic.mService.getAlbumBitmap());
-                    mBigImage.setImageBitmap(activityMusic.mService.getAlbumBitmap());
-                }
-                else {
+                int munutePlay = time / 60;
+                int secondPlay = time % 60;
+                mTimePlay.setText(String.format("%02d:%02d", munutePlay, secondPlay));
+                if (mActivity.getService().getAlbumBitmap() != null) {
+                    mImage.setImageBitmap(mActivity.getService().getAlbumBitmap());
+                    mBigImage.setImageBitmap(mActivity.getService().getAlbumBitmap());
+                } else {
                     mImage.setImageResource(R.drawable.defaut_album_image);
                     mBigImage.setImageResource(R.drawable.defaut_album_image);
                 }
             }
-            if (activityMusic.mService.isPlaying()) {
+            if (mActivity.getService().isPlaying()) {
                 mPlayBtn.setImageResource(R.drawable.ic_play_orange);
-                asyncTask = new SeekBarAsyncTask();
-                asyncTask.execute();
+                mAsyncTask = new SeekBarAsyncTask();
+                mAsyncTask.execute();
             }
 
-            if(activityMusic.mService.isShuffle()){
+            if (mActivity.getService().isShuffle()) {
                 mShuffleBtn.setImageResource(R.drawable.ic_play_shuffle_orange);
             }
-            switch (activityMusic.mService.getRepeatMode()){
-                case 1: mRepeatBtn.setImageResource(R.drawable.ic_repeat_dark_selected);
+            switch (mActivity.getService().getRepeatMode()) {
+                case 1:
+                    mRepeatBtn.setImageResource(R.drawable.ic_repeat_dark_selected);
                     break;
-                case 2: mRepeatBtn.setImageResource(R.drawable.ic_repeat_one_song_dark);
+                case 2:
+                    mRepeatBtn.setImageResource(R.drawable.ic_repeat_one_song_dark);
                     break;
             }
         }
@@ -104,7 +105,7 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     public void onDestroy() {
         super.onDestroy();
         showActionBar((ActivityMusic) getActivity());
-        if (asyncTask != null) asyncTask.cancel(true);
+        if (mAsyncTask != null) mAsyncTask.cancel(true);
     }
 
     @Override
@@ -115,17 +116,17 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     //set play button va trang thai isPlay
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void setmPlayBtn(ActivityMusic activityMusic) {
-        activityMusic.mService.pause();
-        Song song = activityMusic.mService.getSongPlay();
-        if (activityMusic.mService.isPlaying()) {
+        mActivity.getService().pause();
+        Song song = mActivity.getService().getSongPlay();
+        if (mActivity.getService().isPlaying()) {
             if (song != null) {
-                asyncTask = new SeekBarAsyncTask();
-                asyncTask.execute();
+                mAsyncTask = new SeekBarAsyncTask();
+                mAsyncTask.execute();
             }
             mPlayBtn.setImageResource(R.drawable.ic_play_orange);
 
         } else {
-            if (asyncTask != null) asyncTask.cancel(true);
+            if (mAsyncTask != null) mAsyncTask.cancel(true);
             mPlayBtn.setImageResource(R.drawable.ic_pause_orange);
         }
     }
@@ -133,27 +134,25 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
 
     public void updateUi() {
         ActivityMusic activityMusic = (ActivityMusic) getActivity();
-        if(activityMusic!=null && activityMusic.mBound){
-            Song song = activityMusic.mService.getSongPlay();
-            if(song != null){
-                int munute=(int) song.duration/60000;
-                int second=(int) song.duration/1000 %60;
-                mDuration.setText(String.format("%02d:%02d",munute,second));
+        if (activityMusic != null && mActivity.isBound()) {
+            Song song = mActivity.getService().getSongPlay();
+            if (song != null) {
+                int munute = (int) song.duration / 60000;
+                int second = (int) song.duration / 1000 % 60;
+                mDuration.setText(String.format("%02d:%02d", munute, second));
                 mArtistPlay.setText(song.artist);
                 mSeekBar.setMax((int) TimeUnit.MILLISECONDS.toSeconds(song.duration));
                 mNamePlay.setText(song.title);
-                if(activityMusic.mService.isPlaying()){
+                if (mActivity.getService().isPlaying()) {
                     mPlayBtn.setImageResource(R.drawable.ic_play_orange);
-                }
-                else {
+                } else {
                     mPlayBtn.setImageResource(R.drawable.ic_pause_orange);
                 }
-                Bitmap albumImage= activityMusic.mService.getAlbumBitmap();
-                if(albumImage != null){
+                Bitmap albumImage = mActivity.getService().getAlbumBitmap();
+                if (albumImage != null) {
                     mImage.setImageBitmap(albumImage);
                     mBigImage.setImageBitmap(albumImage);
-                }
-                else {
+                } else {
                     mImage.setImageResource(R.drawable.defaut_album_image);
                     mBigImage.setImageResource(R.drawable.defaut_album_image);
                 }
@@ -161,40 +160,42 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
         }
     }
 
-    public void findView(View view){
+    public void findView(View view) {
         mDuration = view.findViewById(R.id.duration);
-        mTimePlay= view.findViewById(R.id.time_play);
+        mTimePlay = view.findViewById(R.id.time_play);
         mNamePlay = view.findViewById(R.id.name_song_playing_2);
         mArtistPlay = view.findViewById(R.id.artist_song_playing_2);
-        mImage=view.findViewById(R.id.image_song_playing_2);
-        mBigImage= view.findViewById(R.id.big_image_song_playing);
-        mShuffleBtn= view.findViewById(R.id.set_shuffle_button);
+        mImage = view.findViewById(R.id.image_song_playing_2);
+        mBigImage = view.findViewById(R.id.big_image_song_playing);
+        mShuffleBtn = view.findViewById(R.id.set_shuffle_button);
         mPlayBtn = view.findViewById(R.id.play_button_2);
-        mPreviuousBtn =view.findViewById(R.id.previous_button);
-        mSeekBar =view.findViewById(R.id.seek_bar);
-        mRepeatBtn= view.findViewById(R.id.set_repeat_button);
-        mNextBtn= view.findViewById(R.id.next_button);
+        mPreviuousBtn = view.findViewById(R.id.previous_button);
+        mSeekBar = view.findViewById(R.id.seek_bar);
+        mRepeatBtn = view.findViewById(R.id.set_repeat_button);
+        mNextBtn = view.findViewById(R.id.next_button);
     }
 
-    public void setOnClick(){
+    public void setOnClick() {
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Song song = activityMusic.mService.getSongPlay();
-                activityMusic.mService.seek(seekBar.getProgress());
-                if (asyncTask != null) {
-                    asyncTask.cancel(true);
+                Song song = mActivity.getService().getSongPlay();
+                mActivity.getService().seek(seekBar.getProgress());
+                if (mAsyncTask!= null) {
+                    mAsyncTask.cancel(true);
                 }
                 if (song != null) {
-                    asyncTask = new SeekBarAsyncTask();
+                    mAsyncTask = new SeekBarAsyncTask();
                 }
-                if ( activityMusic.mService.isPlaying()) asyncTask.execute();
+                if (mActivity.getService().isPlaying()) mAsyncTask.execute();
             }
         });
         mPlayBtn.setOnClickListener(this);
@@ -207,30 +208,31 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
 
             case R.id.play_button_2:
-                setmPlayBtn(activityMusic);
+                setmPlayBtn(mActivity);
                 break;
 
             case R.id.next_button:
-                if (asyncTask != null) asyncTask.cancel(true);
-                activityMusic.mService.nextSong();
-                asyncTask = new SeekBarAsyncTask();
-                asyncTask.execute();
+                if (mAsyncTask != null) mAsyncTask.cancel(true);
+                mActivity.getService().nextSong();
+                mAsyncTask = new SeekBarAsyncTask();
+                mAsyncTask.execute();
                 updateUi();
                 break;
 
             case R.id.previous_button:
-                if (asyncTask != null) asyncTask.cancel(true);
-                activityMusic.mService.previousSong();
-                asyncTask = new SeekBarAsyncTask();
-                asyncTask.execute();
+                if (mAsyncTask != null) mAsyncTask.cancel(true);
+                mActivity.getService().previousSong();
+                mAsyncTask = new SeekBarAsyncTask();
+                mAsyncTask.execute();
                 updateUi();
                 break;
 
-            case R.id.set_shuffle_button:activityMusic.mService.setShuffle();
-                if (activityMusic.mService.isShuffle()){
+            case R.id.set_shuffle_button:
+                mActivity.getService().setShuffle();
+                if (mActivity.getService().isShuffle()) {
                     mShuffleBtn.setImageResource(R.drawable.ic_play_shuffle_orange);
                 } else {
                     mShuffleBtn.setImageResource(R.drawable.ic_shuffle_white);
@@ -238,28 +240,31 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
                 break;
 
             case R.id.set_repeat_button:
-                activityMusic.mService.setRepeatMode();
-                switch (activityMusic.mService.getRepeatMode()){
-                    case 0: mRepeatBtn.setImageResource(R.drawable.ic_repeat_white);
+                mActivity.getService().setRepeatMode();
+                switch (mActivity.getService().getRepeatMode()) {
+                    case 0:
+                        mRepeatBtn.setImageResource(R.drawable.ic_repeat_white);
                         break;
-                    case 1: mRepeatBtn.setImageResource(R.drawable.ic_repeat_dark_selected);
+                    case 1:
+                        mRepeatBtn.setImageResource(R.drawable.ic_repeat_dark_selected);
                         break;
-                    case 2: mRepeatBtn.setImageResource(R.drawable.ic_repeat_one_song_dark);
+                    case 2:
+                        mRepeatBtn.setImageResource(R.drawable.ic_repeat_one_song_dark);
                         break;
                 }
                 break;
         }
     }
 
-    class SeekBarAsyncTask extends AsyncTask<Void,Integer,Void> {
+    class SeekBarAsyncTask extends AsyncTask<Void, Integer, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
-            for(;;){
+            for (; ; ) {
                 try {
                     Thread.sleep(1000);
-                    publishProgress(activityMusic.mService.getTime());
+                    publishProgress(mActivity.getService().getTime());
                 } catch (InterruptedException e) {
-                    Toast.makeText(getContext(),"Co loi say ra",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Co loi say ra", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -267,16 +272,17 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
-            long  munute= values[0]/60;
-            long  second= values[0] % 60;
-            mTimePlay.setText(String.format("%02d:%02d",munute,second));
+            long munute = values[0] / 60;
+            long second = values[0] % 60;
+            mTimePlay.setText(String.format("%02d:%02d", munute, second));
             mSeekBar.setProgress(values[0]);
         }
     }
-    BroadcastReceiver receiver =new BroadcastReceiver() {
+
+    BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-           updateUi();
+            updateUi();
         }
     };
 }

@@ -34,14 +34,14 @@ public class MyService extends Service {
     private final IBinder binder = new MyBinder();
     private ArrayList<Song> mListPlay;
     private int mPosPlay = -1;
+    private int mIdSongPlay = -1;
     private Song mSongPlay;
     private MediaPlayer mPlayer;
     private boolean mIsShuffle;
     private boolean isStarted;
     private int mRepeatMode = 0;
-    private boolean mIsInAllSongs;
-    RemoteViews defaultNotification;
-    RemoteViews bigNotification;
+    private RemoteViews defaultNotification;
+    private RemoteViews bigNotification;
     Bitmap albumBitmap;
     public static final String UP_DATE_UI = "UP_DATE_UI";
     public static final String ACTION_PLAY = "PLAY";
@@ -59,20 +59,19 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        IntentFilter filter= new IntentFilter();
+        IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_NEXT);
         filter.addAction(ACTION_PLAY);
         filter.addAction(ACTION_PREVIOUS);
-        registerReceiver(receiver,filter);
-        mIsInAllSongs=true;
+        registerReceiver(receiver, filter);
     }
 
-    void saveInfo(){
+    void saveInfo() {
         SharedPreferences preferences =
-                getSharedPreferences(MUSIC_APP_PREFERENCE,Context.MODE_PRIVATE);
+                getSharedPreferences(MUSIC_APP_PREFERENCE, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(ID_SONG,getSongPlay().id);
-        editor.commit();
+        editor.putInt(ID_SONG, mSongPlay.id);
+        editor.apply();
     }
 
     public class MyBinder extends Binder {
@@ -94,7 +93,7 @@ public class MyService extends Service {
             Toast.makeText(getBaseContext(), "Exception", Toast.LENGTH_SHORT);
         }
         setOnCompletePlay();
-        if(isForeGround) {
+        if (isForeGround) {
             updateNotification();
         } else startMusicServiceForrground();
         saveInfo();
@@ -104,18 +103,18 @@ public class MyService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMusicServiceForrground() {
-        isForeGround=true;
+        isForeGround = true;
         startForeground(NOTIFY_ID, getMusicnotification());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void updateNotification(){
-        NotificationManager manager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        manager.notify(NOTIFY_ID,getMusicnotification());
+    private void updateNotification() {
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        manager.notify(NOTIFY_ID, getMusicnotification());
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private  Notification getMusicnotification(){
+    private Notification getMusicnotification() {
         Intent intent = new Intent(this, ActivityMusic.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         Intent intentPlay = new Intent(MyService.ACTION_PLAY);
@@ -124,45 +123,45 @@ public class MyService extends Service {
         //default notification
         defaultNotification =
                 new RemoteViews(getPackageName(), R.layout.default_notification);
-        defaultNotification.setTextViewText(R.id.name_song_notification_default,mSongPlay.title);
-        defaultNotification.setTextViewText(R.id.artist_song_notification_default,mSongPlay.artist);
+        defaultNotification.setTextViewText(R.id.name_song_notification_default, mSongPlay.title);
+        defaultNotification.setTextViewText(R.id.artist_song_notification_default, mSongPlay.artist);
         defaultNotification.
                 setOnClickPendingIntent(
                         R.id.next_button_notification_default,
-                        PendingIntent.getBroadcast(MyService.this,0,intentNext,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentNext, 0)
                 );
         defaultNotification.
                 setOnClickPendingIntent(
                         R.id.play_button_notification_default,
-                        PendingIntent.getBroadcast(MyService.this,0,intentPlay,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentPlay, 0)
                 );
         defaultNotification.
                 setOnClickPendingIntent(
                         R.id.previous_button_notification_default,
-                        PendingIntent.getBroadcast(MyService.this,0,intentPrevious,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentPrevious, 0)
                 );
 
         //Big notification
         bigNotification =
-                new RemoteViews(getPackageName(),R.layout.big_notification);
-        bigNotification.setTextViewText(R.id.name_song_notification_big,mSongPlay.title);
-        bigNotification.setTextViewText(R.id.artist_song_notification_big,mSongPlay.artist);
+                new RemoteViews(getPackageName(), R.layout.big_notification);
+        bigNotification.setTextViewText(R.id.name_song_notification_big, mSongPlay.title);
+        bigNotification.setTextViewText(R.id.artist_song_notification_big, mSongPlay.artist);
         bigNotification.
                 setOnClickPendingIntent(
                         R.id.next_button_notification_big,
-                        PendingIntent.getBroadcast(MyService.this,0,intentNext,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentNext, 0)
                 );
         bigNotification.
                 setOnClickPendingIntent(
                         R.id.play_button_notification_big,
-                        PendingIntent.getBroadcast(MyService.this,0,intentPlay,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentPlay, 0)
                 );
         bigNotification.
                 setOnClickPendingIntent(
                         R.id.previous_button_notification_big,
-                        PendingIntent.getBroadcast(MyService.this,0,intentPrevious,0)
+                        PendingIntent.getBroadcast(MyService.this, 0, intentPrevious, 0)
                 );
-        if ( albumBitmap != null){
+        if (albumBitmap != null) {
             bigNotification.setImageViewBitmap(
                     R.id.image_song_notification_big
                     , albumBitmap
@@ -184,7 +183,7 @@ public class MyService extends Service {
             );
         }
 
-        if(isPlaying()){
+        if (isPlaying()) {
             bigNotification.setImageViewResource(
                     R.id.play_button_notification_big,
                     R.drawable.ic_play_orange);
@@ -203,9 +202,10 @@ public class MyService extends Service {
                 .build();
         return notification;
     }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void pause() {
-        if (mPlayer == null){
+        if (mPlayer == null) {
             Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát !", Toast.LENGTH_SHORT).
                     show();
             return;
@@ -218,15 +218,10 @@ public class MyService extends Service {
                 mPlayer.start();
             }
         }
+        updateUi();
         updateNotification();
     }
 
-    public boolean isPlayInAllSongs(){
-        return mIsInAllSongs;
-    }
-    public void setPlayInAllSong(boolean inAllSong){
-        mIsInAllSongs = inAllSong;
-    }
     public boolean isPlaying() {
         if (mPlayer != null) {
             return mPlayer.isPlaying();
@@ -235,8 +230,13 @@ public class MyService extends Service {
 
     public void seek(int second) {
         if (mPlayer != null) {
-            mPlayer.seekTo(second*1000);
+            mPlayer.seekTo(second * 1000);
         }
+    }
+    public void setIdSongPlay(int id){ mIdSongPlay = id ;}
+
+    public int getIdPlay(){
+        return mIdSongPlay;
     }
     public void setPosPlay(int pos) {
         mPosPlay = pos;
@@ -268,24 +268,25 @@ public class MyService extends Service {
             mRepeatMode++;
         } else mRepeatMode = 0;
     }
-    public void setRepeatMode(int mode){
-        mRepeatMode=mode;
+
+    public void setRepeatMode(int mode) {
+        mRepeatMode = mode;
     }
 
     public int getRepeatMode() {
         return mRepeatMode;
     }
 
-    public void setShuffle(){
-        if (mIsShuffle){
+    public void setShuffle() {
+        if (mIsShuffle) {
             mIsShuffle = false;
         } else {
             mIsShuffle = true;
         }
     }
 
-    public void setShuffle( boolean isShuffle){
-        mIsShuffle=isShuffle;
+    public void setShuffle(boolean isShuffle) {
+        mIsShuffle = isShuffle;
     }
 
     public boolean isShuffle() {
@@ -295,17 +296,18 @@ public class MyService extends Service {
     public boolean isStarted() {
         return isStarted;
     }
-    public void setStarted(boolean started){
-        isStarted=started;
+
+    public void setStarted(boolean started) {
+        isStarted = started;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void setOnCompletePlay(){
+    public void setOnCompletePlay() {
         mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                if(isShuffle()){
-                    if(mRepeatMode == 2){
+                if (isShuffle()) {
+                    if (mRepeatMode == 2) {
                         startNewSong(mSongPlay.data);
                     } else {
                         nextSong();
@@ -315,8 +317,7 @@ public class MyService extends Service {
                 } else {
                     switch (mRepeatMode) {
                         case 0:
-                            if (mPosPlay == (mListPlay.size() -1))
-                            {
+                            if (mPosPlay == (mListPlay.size() - 1)) {
                                 nextSong();
                                 pause();
                             } else {
@@ -337,62 +338,65 @@ public class MyService extends Service {
                 }
             }
         });
-    };
+    }
+
+    ;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void nextSong(){
-        if(mPlayer==null) {
+    public void nextSong() {
+        if (mPlayer == null) {
             Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if(mIsShuffle) {
-            Random random =new Random();
-            mPosPlay = random.nextInt( mListPlay.size()-1);
+        if (mIsShuffle) {
+            Random random = new Random();
+            mPosPlay = random.nextInt(mListPlay.size() - 1);
         } else {
-            if( mPosPlay < mListPlay.size()-1){
-                mPosPlay ++;
+            if (mPosPlay < mListPlay.size() - 1) {
+                mPosPlay++;
             } else {
                 mPosPlay = 0;
             }
 
         }
-        mSongPlay= mListPlay.get(mPosPlay);
+        mSongPlay = mListPlay.get(mPosPlay);
+        mIdSongPlay = mSongPlay.id;
         startNewSong(mSongPlay.data);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void previousSong(){
-        if(mPlayer==null) {
+    public void previousSong() {
+        if (mPlayer == null) {
             Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát!", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (mPlayer.getCurrentPosition() > 3000){
+        if (mPlayer.getCurrentPosition() > 3000) {
             startNewSong(mSongPlay.data);
             return;
         }
-        if(mIsShuffle) {
-            Random random =new Random();
-            mPosPlay = random.nextInt( mListPlay.size()-1);
+        if (mIsShuffle) {
+            Random random = new Random();
+            mPosPlay = random.nextInt(mListPlay.size() - 1);
         } else {
-            if( mPosPlay > 0){
-                mPosPlay --;
+            if (mPosPlay > 0) {
+                mPosPlay--;
             } else {
-                mPosPlay = mListPlay.size() -1;
+                mPosPlay = mListPlay.size() - 1;
             }
 
         }
-        mSongPlay= mListPlay.get(mPosPlay);
+        mSongPlay = mListPlay.get(mPosPlay);
         startNewSong(mSongPlay.data);
     }
 
-    void updateUi(){
+    void updateUi() {
         Intent intent = new Intent();
         intent.setAction(UP_DATE_UI);
         sendBroadcast(intent);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    void prepareLastSong(){
+    void prepareLastSong() {
         albumBitmap = Song.getAlbumImage(mSongPlay.data);
         mPlayer = new MediaPlayer();
         try {
@@ -404,24 +408,27 @@ public class MyService extends Service {
         }
     }
 
-    public Bitmap getAlbumBitmap(){
+    public Bitmap getAlbumBitmap() {
         return albumBitmap;
     }
 
-   BroadcastReceiver receiver = new BroadcastReceiver() {
-       @RequiresApi(api = Build.VERSION_CODES.O)
-       @Override
-       public void onReceive(Context context, Intent intent) {
-           String action= intent.getAction();
-           switch (action){
-               case ACTION_NEXT: nextSong();
-               break;
-               case ACTION_PLAY: pause();
-               break;
-               case ACTION_PREVIOUS: previousSong();
-               break;
-           }
-           updateUi();
-       }
-   };
+    BroadcastReceiver receiver = new BroadcastReceiver() {
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                case ACTION_NEXT:
+                    nextSong();
+                    break;
+                case ACTION_PLAY:
+                    pause();
+                    break;
+                case ACTION_PREVIOUS:
+                    previousSong();
+                    break;
+            }
+            updateUi();
+        }
+    };
 }
