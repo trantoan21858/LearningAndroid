@@ -30,7 +30,9 @@ public class FavoriteSongsFragment extends BaseSongListFragment {
         cursor.moveToFirst();
         while (cursor.moveToNext()){
             for (Song item : listAll){
-                if (item.id == cursor.getInt(1)) listFavorite.add(item);
+                if (item.id == cursor.getInt(1) && cursor.getInt(2) ==2) {
+                    listFavorite.add(item);
+                }
             }
         }
         return listFavorite;

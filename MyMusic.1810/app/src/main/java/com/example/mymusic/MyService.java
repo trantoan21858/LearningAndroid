@@ -39,6 +39,7 @@ public class MyService extends Service {
     private boolean mIsShuffle;
     private boolean isStarted;
     private int mRepeatMode = 0;
+    private boolean mIsInAllSongs;
     RemoteViews defaultNotification;
     RemoteViews bigNotification;
     Bitmap albumBitmap;
@@ -63,6 +64,7 @@ public class MyService extends Service {
         filter.addAction(ACTION_PLAY);
         filter.addAction(ACTION_PREVIOUS);
         registerReceiver(receiver,filter);
+        mIsInAllSongs=true;
     }
 
     void saveInfo(){
@@ -204,7 +206,7 @@ public class MyService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void pause() {
         if (mPlayer == null){
-            Toast.makeText(getBaseContext(), "Ban chua chon bai hat !", Toast.LENGTH_SHORT).
+            Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát !", Toast.LENGTH_SHORT).
                     show();
             return;
         }
@@ -219,6 +221,12 @@ public class MyService extends Service {
         updateNotification();
     }
 
+    public boolean isPlayInAllSongs(){
+        return mIsInAllSongs;
+    }
+    public void setPlayInAllSong(boolean inAllSong){
+        mIsInAllSongs = inAllSong;
+    }
     public boolean isPlaying() {
         if (mPlayer != null) {
             return mPlayer.isPlaying();
@@ -334,7 +342,7 @@ public class MyService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void nextSong(){
         if(mPlayer==null) {
-            Toast.makeText(getBaseContext(), "Ban chua chon bai hat", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát!", Toast.LENGTH_SHORT).show();
             return;
         }
         if(mIsShuffle) {
@@ -355,7 +363,7 @@ public class MyService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void previousSong(){
         if(mPlayer==null) {
-            Toast.makeText(getBaseContext(), "Ban chia chon bai hat", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getBaseContext(), "Bạn chưa chọn bài hát!", Toast.LENGTH_SHORT).show();
             return;
         }
         if (mPlayer.getCurrentPosition() > 3000){

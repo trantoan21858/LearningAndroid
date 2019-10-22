@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="@dimen/size_item">
 
-    <TextView
-        android:id="@+id/index_item"
+    <FrameLayout
         android:layout_width="80dp"
-        android:layout_height="@dimen/size_item"
-        android:gravity="center"
-        android:text="0"
-        android:textAppearance="@style/TextAppearance.AppCompat" />
+        android:layout_height="@dimen/size_item">
+        <TextView
+            android:visibility="visible"
+            android:id="@+id/index_item"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="0"
+            android:textAppearance="@style/TextAppearance.AppCompat" />
+
+        <es.claucookie.miniequalizerlibrary.EqualizerView
+            android:id="@+id/equalizer"
+            android:visibility="invisible"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            custom:animDuration="5000"/>
+    </FrameLayout>
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="0dp"

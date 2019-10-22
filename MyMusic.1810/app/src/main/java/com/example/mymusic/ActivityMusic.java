@@ -28,7 +28,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.mymusic.FavoriteDatabase.FavoriteSongsProvider;
 import com.example.mymusic.fragment.AllSongsFragment;
 import com.example.mymusic.fragment.BaseSongListFragment;
 import com.example.mymusic.fragment.FavoriteSongsFragment;
@@ -41,6 +40,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     public static final String CHANNEL_ID="musicChannel";
     public MyService mService;
     public boolean mBound;
+    public boolean isShowFavorite;
     private ArrayList<Song> mList= new ArrayList<>();
     public static final String MUSIC_APP_PREFERENCE ="MUSIC APP PREFERENCES";
     public static final String IS_SHUFFLE="Shuffle";
@@ -64,15 +64,28 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
         mDrawer.addDrawerListener(drawerToggle);
         navigationView=findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(0).setChecked(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         creatList();
         Intent intent = new Intent(this,MyService.class);
+        if(savedInstanceState!=null){
+            isShowFavorite = savedInstanceState.getBoolean("is_show_favorite");
+        }
+        if (isShowFavorite){
+            navigationView.getMenu().getItem(1).setChecked(true);
+        }
         startService(intent);
         bindService(intent,connection,Context.BIND_AUTO_CREATE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             creatNotificationchannel();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("is_show_favorite",isShowFavorite);
     }
 
     @Override
@@ -155,13 +168,16 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
             MyService.MyBinder binder = (MyService.MyBinder) iBinder;
             mService = binder.getService();
             mBound = true;
+            if (isShowFavorite){
+                songsFragment =FavoriteSongsFragment.newInstance();
+            } else {
+                songsFragment =AllSongsFragment.newInstance();
+            }
             int orientation = getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                songsFragment = AllSongsFragment.newInstance();
                 transaction.replace(R.id.activity_music, songsFragment).commit();
             } else {
-                songsFragment =  AllSongsFragment.newInstance();
                 MediaPlaybackFragment playbackFragment = MediaPlaybackFragment.newInstance();
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 transaction.replace(R.id.fram_1, songsFragment)
@@ -189,20 +205,31 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        int orientation = getResources().getConfiguration().orientation;
         switch (menuItem.getItemId()){
             case R.id.nav_allsong:
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 getSupportFragmentManager().popBackStack();
                 songsFragment = AllSongsFragment.newInstance();
-                transaction.replace(R.id.activity_music, songsFragment).commit();
+                if(orientation == Configuration.ORIENTATION_PORTRAIT){
+                    transaction.replace(R.id.activity_music, songsFragment).commit();
+                } else {
+                    transaction.replace(R.id.fram_1,songsFragment).commit();
+                }
                 navigationView.getMenu().getItem(0).setChecked(true);
+                isShowFavorite=false;
                 break;
             case R.id.nav_favorite:
                 getSupportFragmentManager().popBackStack();
                 FragmentTransaction transaction1 = getSupportFragmentManager().beginTransaction();
                 songsFragment = FavoriteSongsFragment.newInstance();
-                transaction1.replace(R.id.activity_music, songsFragment).commit();
+                if(orientation == Configuration.ORIENTATION_PORTRAIT){
+                    transaction1.replace(R.id.activity_music, songsFragment).commit();
+                } else {
+                    transaction1.replace(R.id.fram_1,songsFragment).commit();
+                }
                 navigationView.getMenu().getItem(1).setChecked(true);
+                isShowFavorite=true;
                 break;
                 default:
                     Toast.makeText(ActivityMusic.this,"Cảm ơn bạn đã nghe nhạc!",Toast.LENGTH_SHORT).show();

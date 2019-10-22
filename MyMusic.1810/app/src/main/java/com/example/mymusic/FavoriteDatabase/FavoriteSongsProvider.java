@@ -4,8 +4,10 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,34 +15,41 @@ import androidx.annotation.Nullable;
 
 import static com.example.mymusic.FavoriteDatabase.FavoriteSongsDatabase.DB_NAME;
 import static com.example.mymusic.FavoriteDatabase.FavoriteSongsDatabase.DB_VERSION;
+import static com.example.mymusic.FavoriteDatabase.FavoriteSongsDatabase.ID_PROVIDER;
 
 public class FavoriteSongsProvider extends ContentProvider {
     private static final String AUTHORITY = "com.example.mymusic.FavoriteDatabase.FavoriteSongsProvider";
     private static UriMatcher uriMatcher;
     private static final String TABLE_FAVORITE="favorite_songs";
     public static final String URI_FAVORITE ="content://"+AUTHORITY+"/"+TABLE_FAVORITE;
-    private FavoriteSongsDatabase mFavoriteSongsDatabase;
+    private SQLiteDatabase mDatabase;
 
     @Override
     public boolean onCreate() {
-        mFavoriteSongsDatabase = new FavoriteSongsDatabase(getContext(),DB_NAME,null,DB_VERSION);
-        mFavoriteSongsDatabase.open();
+        FavoriteSongsDatabase favoriteSongsDatabase= new FavoriteSongsDatabase(getContext(),DB_NAME,null,DB_VERSION);
+        mDatabase=favoriteSongsDatabase.getWritableDatabase();
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE,1);//cursor
-        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE+"/#",2);//add
-        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE+"/#",3);//add favorite
-        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE+"/#",4);//remove Favorite
-        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE+"/#",5);//update count
+        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE,1);
+        uriMatcher.addURI(AUTHORITY,TABLE_FAVORITE+"/#",2);
         return true;
     }
 
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] strings, @Nullable String s, @Nullable String[] strings1, @Nullable String s1) {
+        Cursor cursor;
         if(uriMatcher.match(uri) == 1){
-
-            return mFavoriteSongsDatabase.getCursor();
-        } else return null;
+            String sql= "SELECT * FROM "+ TABLE_FAVORITE;
+            cursor = mDatabase.rawQuery(sql,null);
+            return cursor;
+        } else {
+            String sql = "SELECT * FROM " + TABLE_FAVORITE + " WHERE " + ID_PROVIDER +" LIKE " + s;
+            cursor = mDatabase.rawQuery(
+                    sql,
+                    null
+            );
+            return cursor;
+        }
     }
 
     @Nullable
@@ -52,11 +61,7 @@ public class FavoriteSongsProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
-        Log.d("jkasdkasd","klsdjkals");
-        if (uriMatcher.match(uri) == 2) {
-
-            mFavoriteSongsDatabase.add(contentValues);
-        }
+        mDatabase.insert(TABLE_FAVORITE,null,contentValues);
         return null;
     }
 
@@ -67,12 +72,12 @@ public class FavoriteSongsProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues contentValues, @Nullable String s, @Nullable String[] strings) {
-        if(uriMatcher.match(uri) ==3){
-            mFavoriteSongsDatabase.addFavorite(contentValues);
-        } else if (uriMatcher.match(uri)==4)
-            mFavoriteSongsDatabase.removeFavorite(contentValues);
-        else if (uriMatcher.match(uri)==5)
-            mFavoriteSongsDatabase.updateCountClicked(contentValues);
+        mDatabase.update(
+                TABLE_FAVORITE,
+                contentValues,
+                s,
+                strings
+        );
         return 0;
     }
 }

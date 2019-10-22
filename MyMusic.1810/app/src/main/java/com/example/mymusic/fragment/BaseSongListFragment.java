@@ -1,7 +1,6 @@
 package com.example.mymusic.fragment;
 
 import android.content.BroadcastReceiver;
-import android.content.ContentProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mymusic.ActivityMusic;
-import com.example.mymusic.FavoriteDatabase.FavoriteSongsProvider;
 import com.example.mymusic.MyAdapter;
 import com.example.mymusic.MyService;
 import com.example.mymusic.R;
@@ -67,11 +65,6 @@ public class BaseSongListFragment extends Fragment {
                 setmPlayBtn(activityMusic);
             }
         });
-        if (activityMusic.mBound){
-            if (activityMusic.mService.isPlaying()) {
-                mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
-            }
-        }
 
         //set recycleView
         mAdapter = new MyAdapter(mListSong,getContext(),activityMusic,this);
@@ -94,6 +87,9 @@ public class BaseSongListFragment extends Fragment {
                 else mImage.setImageResource(R.drawable.defaut_album_image);
                 recyclerView.smoothScrollToPosition(activityMusic.mService.getPos());
             }
+            if (activityMusic.mService.isPlaying()) {
+                mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
+            }
         }
         return view;
     }
@@ -109,6 +105,7 @@ public class BaseSongListFragment extends Fragment {
         } else {
             mPlayBtn1.setImageResource(R.drawable.ic_media_play_light);
         }
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
