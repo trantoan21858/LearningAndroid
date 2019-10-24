@@ -29,7 +29,7 @@ import com.example.mymusic.Song;
 
 import java.util.concurrent.TimeUnit;
 
-public class MediaPlaybackFragment extends Fragment implements ActivityMusic.IshowActionBar, View.OnClickListener {
+public class MediaPlaybackFragment extends Fragment implements ActivityMusic.IShowActionBar, View.OnClickListener {
     private TextView mNamePlay, mArtistPlay, mDuration, mTimePlay;
     private ImageView mPlayBtn, mImage, mBigImage, mShuffleBtn, mRepeatBtn, mNextBtn, mPreviuousBtn;
     private ActivityMusic mActivity;
@@ -44,9 +44,20 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mActivity = (ActivityMusic) getActivity();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MyService.UP_DATE_UI);
         mActivity.registerReceiver(receiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mActivity.unregisterReceiver(receiver);
     }
 
     @Nullable
@@ -67,12 +78,12 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
                 int time = mActivity.getService().getTime();
                 mSeekBar.setMax((int) TimeUnit.MILLISECONDS.toSeconds(song.duration));
                 mSeekBar.setProgress(time);
-                int munutePlay = time / 60;
-                int secondPlay = time % 60;
-                mTimePlay.setText(String.format("%02d:%02d", munutePlay, secondPlay));
-                if (mActivity.getService().getAlbumBitmap() != null) {
-                    mImage.setImageBitmap(mActivity.getService().getAlbumBitmap());
-                    mBigImage.setImageBitmap(mActivity.getService().getAlbumBitmap());
+                long minutePlay = time / 60;
+                long secondPlay = time % 60;
+                mTimePlay.setText(String.format("%02d:%02d", minutePlay, secondPlay));
+                if (mActivity.getService().getmAlbumBitmap() != null) {
+                    mImage.setImageBitmap(mActivity.getService().getmAlbumBitmap());
+                    mBigImage.setImageBitmap(mActivity.getService().getmAlbumBitmap());
                 } else {
                     mImage.setImageResource(R.drawable.defaut_album_image);
                     mBigImage.setImageResource(R.drawable.defaut_album_image);
@@ -148,7 +159,7 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
                 } else {
                     mPlayBtn.setImageResource(R.drawable.ic_pause_orange);
                 }
-                Bitmap albumImage = mActivity.getService().getAlbumBitmap();
+                Bitmap albumImage = mActivity.getService().getmAlbumBitmap();
                 if (albumImage != null) {
                     mImage.setImageBitmap(albumImage);
                     mBigImage.setImageBitmap(albumImage);
@@ -262,7 +273,7 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
             for (; ; ) {
                 try {
                     Thread.sleep(1000);
-                    publishProgress(mActivity.getService().getTime());
+                        publishProgress((int)mActivity.getService().getTime());
                 } catch (InterruptedException e) {
                     Toast.makeText(getContext(), "Co loi say ra", Toast.LENGTH_SHORT).show();
                 }
@@ -279,7 +290,7 @@ public class MediaPlaybackFragment extends Fragment implements ActivityMusic.Ish
         }
     }
 
-    BroadcastReceiver receiver = new BroadcastReceiver() {
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             updateUi();

@@ -5,10 +5,12 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.ComponentName;
@@ -16,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Build;
@@ -40,12 +43,14 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     public static final String CHANNEL_ID="musicChannel";
     private MyService mService;
     private  boolean mBound;
-    private  boolean isShowFavorite;
+    private  boolean mIsShowFavorite;
     private ArrayList<Song> mList= new ArrayList<>();
     public static final String MUSIC_APP_PREFERENCE ="MUSIC APP PREFERENCES";
     public static final String IS_SHUFFLE="Shuffle";
     public static final String REPEAT_MODE = "Repeat mode";
     public static final String ID_SONG = "id song last";
+    private static final String NAME_CHANNEL="Music channel";
+    private static final String IS_SHOW_FAVORITE= "is_show_favorite";
     private SharedPreferences mPreference;
     private int mIdLast=0;
     private int mNewPos=-1;
@@ -53,6 +58,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     private ActionBarDrawerToggle mDrawerToggle;
     private NavigationView mNavigationView;
     private BaseSongListFragment mSongsFragment;
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,16 +73,24 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
         mNavigationView.getMenu().getItem(0).setChecked(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-        creatList();
+
+        if(checkReadExternalPermission()){
+            creatList();
+        } else {
+            ActivityCompat.requestPermissions(ActivityMusic.this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+        }
+
         Intent intent = new Intent(this,MyService.class);
         if(savedInstanceState!=null){
-            isShowFavorite = savedInstanceState.getBoolean("is_show_favorite");
+            mIsShowFavorite = savedInstanceState.getBoolean(IS_SHOW_FAVORITE);
         }
-        if (isShowFavorite){
+        if (mIsShowFavorite){
             mNavigationView.getMenu().getItem(1).setChecked(true);
         }
         startService(intent);
-        bindService(intent,connection,Context.BIND_AUTO_CREATE);
+        bindService(intent, mConnection,Context.BIND_AUTO_CREATE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             creatNotificationchannel();
         }
@@ -85,7 +99,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean("is_show_favorite",isShowFavorite);
+        outState.putBoolean(IS_SHOW_FAVORITE, mIsShowFavorite);
     }
 
     @Override
@@ -107,13 +121,13 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     public boolean isBound(){
         return mBound;
     }
-    public boolean getShowFavorite(){
-        return isShowFavorite;
+    public boolean getmIsShowFavorite(){
+        return mIsShowFavorite;
     }
 
     @Override
     protected void onDestroy() {
-        unbindService(connection);
+        unbindService(mConnection);
         super.onDestroy();
     }
 
@@ -124,11 +138,50 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
         editor.apply();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private boolean checkReadExternalPermission()
+    {
+        String permission = android.Manifest.permission.READ_EXTERNAL_STORAGE;
+        int res = this.checkCallingOrSelfPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+                if(requestCode == 1){
+                    if (grantResults.length > 0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        creatList();
+                        mSongsFragment= AllSongsFragment.newInstance();
+                        int orientation = getResources().getConfiguration().orientation;
+                        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                            transaction.replace(R.id.activity_music, mSongsFragment).commit();
+                        } else {
+                            MediaPlaybackFragment playbackFragment = MediaPlaybackFragment.newInstance();
+                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                            transaction.replace(R.id.fram_1, mSongsFragment)
+                                    .replace(R.id.fram_2, playbackFragment)
+                                    .commit();
+                        }
+
+                    } else {
+                        Toast.makeText(this, "Bạn cần cấp quyền cho ứng dụng!", Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
-        saveInfoSetting();
+        if(mService!=null){
+            saveInfoSetting();
+        }
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -161,7 +214,10 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     public void changeFragment(View view) {
         getSupportActionBar().hide();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.activity_music, MediaPlaybackFragment.newInstance()).commit();
+        transaction.
+                replace(R.id.activity_music, MediaPlaybackFragment.newInstance())
+                .addToBackStack(null)
+                .commit();
         mNavigationView.setVisibility(View.INVISIBLE);
     }
 
@@ -172,7 +228,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                 .commit();
     }
 
-    ServiceConnection connection=new ServiceConnection() {
+    private ServiceConnection mConnection =new ServiceConnection() {
         @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -180,7 +236,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
             mService = binder.getService();
             mBound = true;
             mService.setIdSongPlay(mIdLast);
-            if (isShowFavorite){
+            if (mIsShowFavorite){
                 mSongsFragment=FavoriteSongsFragment.newInstance();
             } else {
                 mSongsFragment =AllSongsFragment.newInstance();
@@ -229,7 +285,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                     transaction.replace(R.id.fram_1,mSongsFragment).commit();
                 }
                 mNavigationView.getMenu().getItem(0).setChecked(true);
-                isShowFavorite=false;
+                mIsShowFavorite =false;
                 break;
             case R.id.nav_favorite:
                 getSupportFragmentManager().popBackStack();
@@ -241,7 +297,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                     transaction1.replace(R.id.fram_1,mSongsFragment).commit();
                 }
                 mNavigationView.getMenu().getItem(1).setChecked(true);
-                isShowFavorite=true;
+                mIsShowFavorite =true;
                 break;
                 default:
                     Toast.makeText(ActivityMusic.this,"Cảm ơn bạn đã nghe nhạc!",Toast.LENGTH_SHORT).show();
@@ -250,7 +306,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
         return true;
     }
 
-    public interface IshowActionBar {
+    public interface IShowActionBar {
         void showActionBar(ActivityMusic activityMusic);
     }
 
@@ -297,7 +353,7 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
     void creatNotificationchannel() {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "Music channel",
+                NAME_CHANNEL,
                 NotificationManager.IMPORTANCE_DEFAULT
         );
 

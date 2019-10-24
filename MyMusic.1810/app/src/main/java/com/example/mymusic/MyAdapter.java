@@ -158,7 +158,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
 
     public PopupMenu getMenu(View v, final int pos) {
         PopupMenu popupMenu = new PopupMenu(mContext, v);
-        if(!mActivityMusic.getShowFavorite()){
+        if(!mActivityMusic.getmIsShowFavorite()){
             popupMenu.getMenu().add(0, 1, 0, "Yêu thích!");
         }
         popupMenu.getMenu().add(0, 2, 0, "Bỏ thích.");
@@ -267,7 +267,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
                     null
 
             );
-            if(mActivityMusic.getShowFavorite()){
+            if(mActivityMusic.getmIsShowFavorite()){
                 mList.remove(pos);
                 notifyDataSetChanged();
             }

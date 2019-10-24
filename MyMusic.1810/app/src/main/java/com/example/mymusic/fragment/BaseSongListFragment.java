@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 public class BaseSongListFragment extends Fragment {
     private ArrayList<Song> mListSong;
-    private RecyclerView recyclerView;
+    private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private ImageView mPlayBtn1, mImage;
     private TextView mNamePlay, mArtist;
@@ -38,13 +38,19 @@ public class BaseSongListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityMusic activity= (ActivityMusic) getActivity();
         mListSong = getList();
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        ActivityMusic activity= (ActivityMusic) getActivity();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(MyService.UP_DATE_UI);
         activity.registerReceiver(receiver,intentFilter);
-    }
 
+    }
 
     public ArrayList<Song> getList() {
         return null;
@@ -68,9 +74,9 @@ public class BaseSongListFragment extends Fragment {
 
         //set recycleView
         mAdapter = new MyAdapter(mListSong,getContext(),activityMusic,this);
-        recyclerView = view.findViewById(R.id.list_item_song);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(mAdapter);
+        mRecyclerView = view.findViewById(R.id.list_item_song);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerView.setAdapter(mAdapter);
         //info song
         mNamePlay = view.findViewById(R.id.name_song_playing_1);
         mArtist = view.findViewById(R.id.artist_song_playing_1);
@@ -78,14 +84,14 @@ public class BaseSongListFragment extends Fragment {
         if (activityMusic.isBound()){
             if (activityMusic.getService().getSongPlay() != null) {
                 Song song = ((ActivityMusic) getActivity()).getService().getSongPlay();
-                Bitmap albumImage= activityMusic.getService().getAlbumBitmap();
+                Bitmap albumImage= activityMusic.getService().getmAlbumBitmap();
                 mNamePlay.setText(song.title);
                 mArtist.setText(song.artist);
                 if(albumImage != null){
                     mImage.setImageBitmap(albumImage);
                 }
                 else mImage.setImageResource(R.drawable.defaut_album_image);
-                recyclerView.smoothScrollToPosition(activityMusic.getService().getPos());
+                mRecyclerView.smoothScrollToPosition(activityMusic.getService().getPos());
             }
             if (activityMusic.getService().isPlaying()) {
                 mPlayBtn1.setImageResource(R.drawable.ic_media_pause_light);
@@ -111,13 +117,15 @@ public class BaseSongListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        ActivityMusic activity= (ActivityMusic) getActivity();
+        activity.unregisterReceiver(receiver);
     }
 
     public void updateUi() {
         ActivityMusic activityMusic = (ActivityMusic) getActivity();
         if (activityMusic != null && activityMusic.isBound()){
             Song song = activityMusic.getService().getSongPlay();
-            Bitmap albumImage= activityMusic.getService().getAlbumBitmap();
+            Bitmap albumImage= activityMusic.getService().getmAlbumBitmap();
             mNamePlay.setText(song.title);
             mArtist.setText(song.artist);
             if(activityMusic.getService().isPlaying()) {

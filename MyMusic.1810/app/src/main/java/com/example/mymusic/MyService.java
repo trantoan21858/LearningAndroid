@@ -30,7 +30,7 @@ import static com.example.mymusic.ActivityMusic.ID_SONG;
 import static com.example.mymusic.ActivityMusic.MUSIC_APP_PREFERENCE;
 
 public class MyService extends Service {
-    private boolean isForeGround;
+    private boolean mIsForeGround;
     private final IBinder binder = new MyBinder();
     private ArrayList<Song> mListPlay;
     private int mPosPlay = -1;
@@ -40,9 +40,9 @@ public class MyService extends Service {
     private boolean mIsShuffle;
     private boolean isStarted;
     private int mRepeatMode = 0;
-    private RemoteViews defaultNotification;
-    private RemoteViews bigNotification;
-    Bitmap albumBitmap;
+    private RemoteViews mDefaultNotification;
+    private RemoteViews mBigNotification;
+    Bitmap mAlbumBitmap;
     public static final String UP_DATE_UI = "UP_DATE_UI";
     public static final String ACTION_PLAY = "PLAY";
     public static final String ACTION_NEXT = "NEXT";
@@ -82,7 +82,7 @@ public class MyService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void startNewSong(final String data) {
-        albumBitmap = Song.getAlbumImage(data);
+        mAlbumBitmap = Song.getAlbumImage(data);
         if (mPlayer != null) mPlayer.release();
         mPlayer = new MediaPlayer();
         try {
@@ -93,7 +93,7 @@ public class MyService extends Service {
             Toast.makeText(getBaseContext(), "Exception", Toast.LENGTH_SHORT);
         }
         setOnCompletePlay();
-        if (isForeGround) {
+        if (mIsForeGround) {
             updateNotification();
         } else startMusicServiceForrground();
         saveInfo();
@@ -103,7 +103,7 @@ public class MyService extends Service {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startMusicServiceForrground() {
-        isForeGround = true;
+        mIsForeGround = true;
         startForeground(NOTIFY_ID, getMusicnotification());
     }
 
@@ -121,82 +121,82 @@ public class MyService extends Service {
         Intent intentNext = new Intent(MyService.ACTION_NEXT);
         Intent intentPrevious = new Intent(MyService.ACTION_PREVIOUS);
         //default notification
-        defaultNotification =
+        mDefaultNotification =
                 new RemoteViews(getPackageName(), R.layout.default_notification);
-        defaultNotification.setTextViewText(R.id.name_song_notification_default, mSongPlay.title);
-        defaultNotification.setTextViewText(R.id.artist_song_notification_default, mSongPlay.artist);
-        defaultNotification.
+        mDefaultNotification.setTextViewText(R.id.name_song_notification_default, mSongPlay.title);
+        mDefaultNotification.setTextViewText(R.id.artist_song_notification_default, mSongPlay.artist);
+        mDefaultNotification.
                 setOnClickPendingIntent(
                         R.id.next_button_notification_default,
                         PendingIntent.getBroadcast(MyService.this, 0, intentNext, 0)
                 );
-        defaultNotification.
+        mDefaultNotification.
                 setOnClickPendingIntent(
                         R.id.play_button_notification_default,
                         PendingIntent.getBroadcast(MyService.this, 0, intentPlay, 0)
                 );
-        defaultNotification.
+        mDefaultNotification.
                 setOnClickPendingIntent(
                         R.id.previous_button_notification_default,
                         PendingIntent.getBroadcast(MyService.this, 0, intentPrevious, 0)
                 );
 
         //Big notification
-        bigNotification =
+        mBigNotification =
                 new RemoteViews(getPackageName(), R.layout.big_notification);
-        bigNotification.setTextViewText(R.id.name_song_notification_big, mSongPlay.title);
-        bigNotification.setTextViewText(R.id.artist_song_notification_big, mSongPlay.artist);
-        bigNotification.
+        mBigNotification.setTextViewText(R.id.name_song_notification_big, mSongPlay.title);
+        mBigNotification.setTextViewText(R.id.artist_song_notification_big, mSongPlay.artist);
+        mBigNotification.
                 setOnClickPendingIntent(
                         R.id.next_button_notification_big,
                         PendingIntent.getBroadcast(MyService.this, 0, intentNext, 0)
                 );
-        bigNotification.
+        mBigNotification.
                 setOnClickPendingIntent(
                         R.id.play_button_notification_big,
                         PendingIntent.getBroadcast(MyService.this, 0, intentPlay, 0)
                 );
-        bigNotification.
+        mBigNotification.
                 setOnClickPendingIntent(
                         R.id.previous_button_notification_big,
                         PendingIntent.getBroadcast(MyService.this, 0, intentPrevious, 0)
                 );
-        if (albumBitmap != null) {
-            bigNotification.setImageViewBitmap(
+        if (mAlbumBitmap != null) {
+            mBigNotification.setImageViewBitmap(
                     R.id.image_song_notification_big
-                    , albumBitmap
+                    , mAlbumBitmap
             );
 
-            defaultNotification.setImageViewBitmap(
+            mDefaultNotification.setImageViewBitmap(
                     R.id.image_song_notification_default
-                    , albumBitmap
+                    , mAlbumBitmap
             );
 
         } else {
-            bigNotification.setImageViewResource(
+            mBigNotification.setImageViewResource(
                     R.id.image_song_notification_big
                     , R.drawable.defaut_album_image
             );
-            defaultNotification.setImageViewResource(
+            mDefaultNotification.setImageViewResource(
                     R.id.image_song_notification_default
                     , R.drawable.defaut_album_image
             );
         }
 
         if (isPlaying()) {
-            bigNotification.setImageViewResource(
+            mBigNotification.setImageViewResource(
                     R.id.play_button_notification_big,
                     R.drawable.ic_play_orange);
-            defaultNotification.setImageViewResource(
+            mDefaultNotification.setImageViewResource(
                     R.id.play_button_notification_default,
                     R.drawable.ic_play_orange);
         }
 
 
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
-                .setCustomContentView(defaultNotification)
+                .setCustomContentView(mDefaultNotification)
                 .setSmallIcon(R.drawable.ic_small_notification)
-                .setCustomBigContentView(bigNotification)
+                .setCustomBigContentView(mBigNotification)
                 .setStyle(new Notification.DecoratedCustomViewStyle())
                 .setContentIntent(pendingIntent)
                 .build();
@@ -260,7 +260,11 @@ public class MyService extends Service {
 
     public int getTime() {
         if (mPlayer == null) return 0;
-        else return (int) TimeUnit.MILLISECONDS.toSeconds(mPlayer.getCurrentPosition());
+        else try {
+            return (int) TimeUnit.MILLISECONDS.toSeconds(mPlayer.getCurrentPosition());
+        }catch (Exception e){
+            return 0;
+        }
     }
 
     public void setRepeatMode() {
@@ -395,9 +399,15 @@ public class MyService extends Service {
         sendBroadcast(intent);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     void prepareLastSong() {
-        albumBitmap = Song.getAlbumImage(mSongPlay.data);
+        mAlbumBitmap = Song.getAlbumImage(mSongPlay.data);
         mPlayer = new MediaPlayer();
         try {
             mPlayer.setDataSource(mSongPlay.data);
@@ -408,8 +418,8 @@ public class MyService extends Service {
         }
     }
 
-    public Bitmap getAlbumBitmap() {
-        return albumBitmap;
+    public Bitmap getmAlbumBitmap() {
+        return mAlbumBitmap;
     }
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
