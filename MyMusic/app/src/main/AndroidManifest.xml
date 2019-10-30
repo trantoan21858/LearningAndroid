@@ -3,7 +3,7 @@
     xmlns:dist="http://schemas.android.com/apk/distribution"
     package="com.example.mymusic">
 
-    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -19,12 +19,6 @@
         <provider
             android:name=".FavoriteDatabase.FavoriteSongsProvider"
             android:authorities="com.example.mymusic.FavoriteDatabase.FavoriteSongsProvider" />
-
-        <receiver android:name=".MyService">
-            <intent-filter>
-                <action android:name="Notififcation_Click" />
-            </intent-filter>
-        </receiver>
 
         <service android:name=".MyService" />
 

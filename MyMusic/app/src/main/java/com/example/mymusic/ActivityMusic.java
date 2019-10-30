@@ -1,6 +1,7 @@
 package com.example.mymusic;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceFragment;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +37,7 @@ import com.example.mymusic.fragment.AllSongsFragment;
 import com.example.mymusic.fragment.BaseSongListFragment;
 import com.example.mymusic.fragment.FavoriteSongsFragment;
 import com.example.mymusic.fragment.MediaPlaybackFragment;
+import com.example.mymusic.fragment.SettingFragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.util.ArrayList;
@@ -74,11 +77,16 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
+        String[] premission= {
+          Manifest.permission.READ_EXTERNAL_STORAGE
+                ,Manifest.permission.READ_PHONE_STATE
+        };
+
         if(checkReadExternalPermission()){
             creatList();
         } else {
             ActivityCompat.requestPermissions(ActivityMusic.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    premission,
                     1);
         }
 
@@ -167,9 +175,8 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                                     .commit();
                         }
 
-                    } else {
-                        Toast.makeText(this, "Bạn cần cấp quyền cho ứng dụng!", Toast.LENGTH_SHORT).show();
                     }
+
                     return;
                 }
     }
@@ -299,11 +306,34 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                 mNavigationView.getMenu().getItem(1).setChecked(true);
                 mIsShowFavorite =true;
                 break;
+            case R.id.nav_setting:
+                FragmentTransaction transaction12 = getSupportFragmentManager().beginTransaction();
+                int orientaion = getResources().getConfiguration().orientation;
+                if(orientaion==Configuration.ORIENTATION_PORTRAIT){
+                    transaction12.replace(R.id.activity_music, new SettingFragment()).addToBackStack(null)
+                            .commit();
+                } else {
+                    transaction12.replace(R.id.fram_2, new SettingFragment()).addToBackStack(null)
+                            .commit();
+                }
+                break;
                 default:
                     Toast.makeText(ActivityMusic.this,"Cảm ơn bạn đã nghe nhạc!",Toast.LENGTH_SHORT).show();
         }
         mDrawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public void openSetting(View view) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        int orientaion = getResources().getConfiguration().orientation;
+        if(orientaion==Configuration.ORIENTATION_PORTRAIT){
+            transaction.replace(R.id.activity_music, new SettingFragment()).addToBackStack(null)
+                    .commit();
+        } else {
+            transaction.replace(R.id.fram_2, new SettingFragment()).addToBackStack(null)
+                    .commit();
+        }
     }
 
     public interface IShowActionBar {
@@ -356,9 +386,11 @@ public class ActivityMusic extends AppCompatActivity implements NavigationView.O
                 NAME_CHANNEL,
                 NotificationManager.IMPORTANCE_DEFAULT
         );
-
+        channel.enableVibration(false);
+        channel.enableLights(false);
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(channel);
     }
+
 }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Cài đặt">
+        <SwitchPreference android:title="Tạm dừng khi rút tai nghe."
+            android:defaultValue="false"
+            android:key="pasue_unplugging"/>
+        <SwitchPreference android:title="Chế độ đêm."
+            android:defaultValue="false"
+            android:key="dark_mode"/>
+        <ListPreference
+            android:dialogTitle="Chọn thời gian."
+            android:entries="@array/settings_list_preference_titles"
+            android:entryValues="@array/settings_list_preference_values"
+            android:key="list"
+            android:summary="Chạm để chọn"
+            android:title="Hẹn giờ." />
+    </PreferenceCategory>
+</PreferenceScreen>

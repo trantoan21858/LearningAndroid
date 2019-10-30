@@ -17,7 +17,6 @@ public class Song {
 
     public int id;
 
-    public int count=0;
 
     public Song(String title, String artist, long duration, String data,int id) {
         this.title = title;

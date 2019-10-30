@@ -66,12 +66,13 @@
             tools:ignore="OnClick" />
 
         <ImageView
-            android:id="@+id/menu_button"
+            android:id="@+id/setting_button"
             android:layout_width="50dp"
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:paddingBottom="@dimen/padding"
             android:paddingTop="@dimen/padding"
+            android:onClick="openSetting"
             android:src="@drawable/ic_menu_moreoverflow_small_normal" />
 
     </LinearLayout>

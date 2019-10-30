@@ -14,13 +14,17 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.preference.PreferenceManager;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +47,7 @@ public class MyService extends Service {
     private RemoteViews mDefaultNotification;
     private RemoteViews mBigNotification;
     Bitmap mAlbumBitmap;
+    private SharedPreferences mPreferanceSetting;
     public static final String UP_DATE_UI = "UP_DATE_UI";
     public static final String ACTION_PLAY = "PLAY";
     public static final String ACTION_NEXT = "NEXT";
@@ -59,10 +64,12 @@ public class MyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mPreferanceSetting = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_NEXT);
         filter.addAction(ACTION_PLAY);
         filter.addAction(ACTION_PREVIOUS);
+        filter.addAction(Intent.ACTION_HEADSET_PLUG);
         registerReceiver(receiver, filter);
     }
 
@@ -140,7 +147,6 @@ public class MyService extends Service {
                         R.id.previous_button_notification_default,
                         PendingIntent.getBroadcast(MyService.this, 0, intentPrevious, 0)
                 );
-
         //Big notification
         mBigNotification =
                 new RemoteViews(getPackageName(), R.layout.big_notification);
@@ -202,7 +208,6 @@ public class MyService extends Service {
                 .build();
         return notification;
     }
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void pause() {
         if (mPlayer == null) {
@@ -214,12 +219,14 @@ public class MyService extends Service {
         if (mPlayer != null) {
             if (mPlayer.isPlaying()) {
                 mPlayer.pause();
+                updateNotification();
+                stopForeground(false);
             } else {
                 mPlayer.start();
+                startForeground(NOTIFY_ID,getMusicnotification());
             }
         }
         updateUi();
-        updateNotification();
     }
 
     public boolean isPlaying() {
@@ -422,11 +429,25 @@ public class MyService extends Service {
         return mAlbumBitmap;
     }
 
+    PhoneStateListener mPhoneStateListener = new PhoneStateListener(){
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        @Override
+        public void onCallStateChanged(int state, String phoneNumber) {
+            super.onCallStateChanged(state, phoneNumber);
+            if(state == TelephonyManager.CALL_STATE_RINGING){
+                if(mPlayer.isPlaying()) pause();
+            }
+        }
+    };
+
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            TelephonyManager telephony =
+                    (TelephonyManager) getApplicationContext().getSystemService(Context.TELEPHONY_SERVICE);
+            telephony.listen(mPhoneStateListener,PhoneStateListener.LISTEN_CALL_STATE);
             switch (action) {
                 case ACTION_NEXT:
                     nextSong();
@@ -436,6 +457,21 @@ public class MyService extends Service {
                     break;
                 case ACTION_PREVIOUS:
                     previousSong();
+                    break;
+                case Intent.ACTION_CALL:
+                    if(mPlayer.isPlaying()) pause();
+                    break;
+                case Intent.ACTION_HEADSET_PLUG:
+                    SharedPreferences preferences =
+                            PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+                    int plug = intent.getIntExtra("state",-1);
+                    if(plug==0  && preferences.getBoolean("pasue_unplugging",false)){
+                        if (mPlayer != null)
+                        {
+                            if(mPlayer.isPlaying()) pause();
+                        }
+                    }
                     break;
             }
             updateUi();

@@ -269,7 +269,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> impl
             );
             if(mActivityMusic.getmIsShowFavorite()){
                 mList.remove(pos);
-                notifyDataSetChanged();
+                try {
+                    notifyDataSetChanged();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         }
 
